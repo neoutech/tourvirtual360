@@ -1,0 +1,121 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script>```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tour Virtual 360° UNICEPES - NexiNet</title>
+    <script src="./aframe.min.js"></script>
+    <script>
+        AFRAME.registerComponent('hotspot-nav', {
+            schema: { scene: {type: 'string'} },
+            init: function () {
+                this.el.addEventListener('click', () => {
+                    console.log(`Cambiando a ${this.data.scene}`);
+                    const sky = document.querySelector('#sky');
+                    if (!sky) {
+                        console.error('No se encontró #sky');
+                        return;
+                    }
+                    sky.setAttribute('src', this.data.scene);
+                    document.querySelectorAll('.hotspot').forEach(hotspot => {
+                        const isVisible = hotspot.getAttribute('scene-name') === this.data.scene;
+                        hotspot.setAttribute('visible', isVisible);
+                        console.log(`Hotspot ${hotspot.getAttribute('scene-name')} visible: ${isVisible}`);
+                    });
+                });
+                this.el.addEventListener('mouseenter', () => {
+                    this.el.setAttribute('material', 'color: red');
+                });
+                this.el.addEventListener('mouseleave', () => {
+                    this.el.setAttribute('material', 'color: blue');
+                });
+            }
+        });
+        window.onload = function() {
+            console.log('Inicializando tour virtual');
+            const hotspots = document.querySelectorAll('.hotspot');
+            console.log(`Encontrados ${hotspots.length} hotspots`);
+            hotspots.forEach(hotspot => {
+                const isVisible = hotspot.getAttribute('scene-name') === './entrada.jpg';
+                hotspot.setAttribute('visible', isVisible);
+                console.log(`Hotspot ${hotspot.getAttribute('scene-name')} inicial: ${isVisible}`);
+            });
+        };
+    </script>
+</head>
+<body>
+    <a-scene embedded>
+        <a-sky id="sky" src="./entrada.jpg"></a-sky>
+        <!-- Hotspots para entrada -->
+        <a-entity class="hotspot" scene-name="./entrada.jpg" hotspot-nav="scene: ./aula1.jpg" position="-5 0 0" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="true" cursor-listener>
+            <a-text value="Aula 1" position="0 0.7 0" align="center" color="white"></a-text>
+        </a-entity>
+        <a-entity class="hotspot" scene-name="./entrada.jpg" hotspot-nav="scene: ./patio.jpg" position="0 0 -5" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="true" cursor-listener>
+            <a-text value="Patio" position="0 0.7 0" align="center" color="white"></a-text>
+        </a-entity>
+        <a-entity class="hotspot" scene-name="./entrada.jpg" hotspot-nav="scene: ./aula2.jpg" position="5 0 0" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="true" cursor-listener>
+            <a-text value="Aula 2" position="0 0.7 0" align="center" color="white"></a-text>
+        </a-entity>
+        <!-- Hotspots para aula1 -->
+        <a-entity class="hotspot" scene-name="./aula1.jpg" hotspot-nav="scene: ./entrada.jpg" position="0 0 -5" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="false" cursor-listener>
+            <a-text value="Entrada" position="0 0.7 0" align="center" color="white"></a-text>
+        </a-entity>
+        <a-entity class="hotspot" scene-name="./aula1.jpg" hotspot-nav="scene: ./aula2.jpg" position="5 0 0" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="false" cursor-listener>
+            <a-text value="Aula 2" position="0 0.7 0" align="center" color="white"></a-text>
+        </a-entity>
+        <!-- Hotspots para patio -->
+        <a-entity class="hotspot" scene-name="./patio.jpg" hotspot-nav="scene: ./entrada.jpg" position="0 0 -5" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="false" cursor-listener>
+            <a-text value="Entrada" position="0 0.7 0" align="center" color="white"></a-text>
+        </a-entity>
+        <!-- Hotspots para aula2 -->
+        <a-entity class="hotspot" scene-name="./aula2.jpg" hotspot-nav="scene: ./aula1.jpg" position="0 0 -5" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="false" cursor-listener>
+            <a-text value="Aula 1" position="0 0.7 0" align="center" color="white"></a-text>
+        </a-entity>
+        <a-camera><a-cursor color="red"></a-cursor></a-camera>
+        <a-light type="ambient" intensity="0.8"></a-light>
+        <a-light type="directional" intensity="0.8" position="1 1 1"></a-light>
+    </a-scene>
+    <p>Clic en los círculos para cambiar de escena. Arrastra para rotar.</p>
+</body>
+</html>
+```

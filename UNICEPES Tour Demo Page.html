@@ -42,9 +42,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tour Virtual 360° UNICEPES - NexiNet</title>
+    <title>UNICEPES Zitácuaro - Tour Virtual 360°</title>
     <script src="./aframe.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans">
+    <header class="bg-blue-800 text-white text-center py-6 shadow-lg">
+        <h1 class="text-3xl md:text-4xl font-bold">UNICEPES Zitácuaro</h1>
+        <p class="text-lg md:text-xl mt-2">Explora nuestro campus con un tour virtual 360°</p>
+    </header>
+
+    <main class="flex justify-center items-center my-8 px-4">
+        <div class="w-full max-w-4xl bg-white rounded-lg shadow-xl overflow-hidden">
+            <a-scene embedded class="w-full h-[600px]">
+                <a-sky id="sky" src="./entrada.jpg" onload="console.log('Imagen entrada.jpg cargada')"></a-sky>
+                <!-- Hotspots para entrada -->
+                <a-entity class="hotspot" scene-name="./entrada.jpg" hotspot-nav="scene: ./aula1.jpg" position="-2 0 -3" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="true" cursor-listener>
+                    <a-text value="Aula 1" position="0 0.7 0" align="center" color="white"></a-text>
+                </a-entity>
+                <a-entity class="hotspot" scene-name="./entrada.jpg" hotspot-nav="scene: ./patio.jpg" position="0 0 -3" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="true" cursor-listener>
+                    <a-text value="Patio" position="0 0.7 0" align="center" color="white"></a-text>
+                </a-entity>
+                <a-entity class="hotspot" scene-name="./entrada.jpg" hotspot-nav="scene: ./aula2.jpg" position="2 0 -3" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="true" cursor-listener>
+                    <a-text value="Aula 2" position="0 0.7 0" align="center" color="white"></a-text>
+                </a-entity>
+                <!-- Hotspots para aula1 -->
+                <a-entity class="hotspot" scene-name="./aula1.jpg" hotspot-nav="scene: ./entrada.jpg" position="0 0 -3" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="false" cursor-listener>
+                    <a-text value="Entrada" position="0 0.7 0" align="center" color="white"></a-text>
+                </a-entity>
+                <a-entity class="hotspot" scene-name="./aula1.jpg" hotspot-nav="scene: ./aula2.jpg" position="2 0 -3" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="false" cursor-listener>
+                    <a-text value="Aula 2" position="0 0.7 0" align="center" color="white"></a-text>
+                </a-entity>
+                <!-- Hotspots para patio -->
+                <a-entity class="hotspot" scene-name="./patio.jpg" hotspot-nav="scene: ./entrada.jpg" position="0 0 -3" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="false" cursor-listener>
+                    <a-text value="Entrada" position="0 0.7 0" align="center" color="white"></a-text>
+                </a-entity>
+                <!-- Hotspots para aula2 -->
+                <a-entity class="hotspot" scene-name="./aula2.jpg" hotspot-nav="scene: ./aula1.jpg" position="0 0 -3" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="false" cursor-listener>
+                    <a-text value="Aula 1" position="0 0.7 0" align="center" color="white"></a-text>
+                </a-entity>
+                <!-- Cámara -->
+                <a-camera look-controls="enabled: true; touchEnabled: true; mouseEnabled: true; reverseMouseDrag: false" magic-window-controls="enabled: true">
+                    <a-cursor color="red" fuse="true" fuse-timeout="1000" raycaster="objects: .hotspot"></a-cursor>
+                </a-camera>
+                <a-light type="ambient" intensity="0.8"></a-light>
+                <a-light type="directional" intensity="0.8" position="1 1 1"></a-light>
+            </a-scene>
+        </div>
+    </main>
+
+    <footer class="bg-blue-800 text-white text-center py-4">
+        <p>Desarrollado por <a href="mailto:moises@nexinet.com" class="underline">NexiNet</a> | Zitácuaro, Michoacán</p>
+    </footer>
+
     <script>
         AFRAME.registerComponent('hotspot-nav', {
             schema: { scene: {type: 'string'} },
@@ -71,10 +121,38 @@
                     console.log(`Mouseleave en hotspot ${this.el.getAttribute('scene-name')}`);
                     this.el.setAttribute('material', 'color: blue');
                 });
+                this.el.addEventListener('fusing', () => {
+                    console.log(`Fusing en hotspot ${this.el.getAttribute('scene-name')}`);
+                    this.el.setAttribute('material', 'color: red');
+                });
+                this.el.addEventListener('touchend', () => {
+                    console.log('Toque en hotspot');
+                    this.el.emit('click');
+                });
             }
         });
+
+        AFRAME.registerComponent('cursor-listener', {
+            init: function () {
+                this.el.addEventListener('click', () => {
+                    console.log('Clic en hotspot');
+                    this.el.emit('click');
+                });
+                this.el.addEventListener('touchend', () => {
+                    console.log('Toque en hotspot');
+                    this.el.emit('click');
+                });
+            }
+        });
+
         window.onload = function() {
             console.log('Inicializando tour virtual');
+            const sky = document.querySelector('#sky');
+            if (sky) {
+                console.log('Elemento sky encontrado');
+            } else {
+                console.error('Elemento sky no encontrado');
+            }
             const hotspots = document.querySelectorAll('.hotspot');
             console.log(`Encontrados ${hotspots.length} hotspots`);
             hotspots.forEach(hotspot => {
@@ -84,64 +162,5 @@
             });
         };
     </script>
-</head>
-<body class="bg-gray-100 font-sans">
-    <!-- Encabezado -->
-    <header class="bg-blue-800 text-white py-4">
-        <div class="container mx-auto text-center">
-            <h1 class="text-3xl font-bold">UNICEPES Zitácuaro</h1>
-            <p class="text-lg">Explora nuestra universidad con un tour virtual 360°</p>
-        </div>
-    </header>
-
-    <!-- Sección del Tour -->
-    <section class="py-8">
-        <div class="container mx-auto px-4">
-            <h2 class="text-2xl font-semibold text-center mb-4">Tour Virtual 360°</h2>
-            <p class="text-center text-gray-600 mb-6">Haz clic en los círculos para moverte entre escenas y arrastra para rotar.</p>
-            <div class="flex justify-center">
-                <div class="w-full max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden">
-                    <a-scene embedded class="w-full h-[600px]">
-                        <a-sky id="sky" src="./entrada.jpg"></a-sky>
-                        <!-- Hotspots para entrada -->
-                        <a-entity class="hotspot" scene-name="./entrada.jpg" hotspot-nav="scene: ./aula1.jpg" position="-5 0 0" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="true" cursor-listener>
-                            <a-text value="Aula 1" position="0 0.7 0" align="center" color="white"></a-text>
-                        </a-entity>
-                        <a-entity class="hotspot" scene-name="./entrada.jpg" hotspot-nav="scene: ./patio.jpg" position="0 0 -5" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="true" cursor-listener>
-                            <a-text value="Patio" position="0 0.7 0" align="center" color="white"></a-text>
-                        </a-entity>
-                        <a-entity class="hotspot" scene-name="./entrada.jpg" hotspot-nav="scene: ./aula2.jpg" position="5 0 0" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="true" cursor-listener>
-                            <a-text value="Aula 2" position="0 0.7 0" align="center" color="white"></a-text>
-                        </a-entity>
-                        <!-- Hotspots para aula1 -->
-                        <a-entity class="hotspot" scene-name="./aula1.jpg" hotspot-nav="scene: ./entrada.jpg" position="0 0 -5" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="false" cursor-listener>
-                            <a-text value="Entrada" position="0 0.7 0" align="center" color="white"></a-text>
-                        </a-entity>
-                        <a-entity class="hotspot" scene-name="./aula1.jpg" hotspot-nav="scene: ./aula2.jpg" position="5 0 0" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="false" cursor-listener>
-                            <a-text value="Aula 2" position="0 0.7 0" align="center" color="white"></a-text>
-                        </a-entity>
-                        <!-- Hotspots para patio -->
-                        <a-entity class="hotspot" scene-name="./patio.jpg" hotspot-nav="scene: ./entrada.jpg" position="0 0 -3" geometry="primitive: circle; radius: 0.7" material="color: blue; opacity: 0.7" visible="false" cursor-listener>
-                            <a-text value="Entrada" position="0 0.7 0" align="center" color="white"></a-text>
-                        </a-entity>
-                        <!-- Hotspots para aula2 -->
-                        <a-entity class="hotspot" scene-name="./aula2.jpg" hotspot-nav="scene: ./aula1.jpg" position="0 0 -5" geometry="primitive: circle; radius: 0.5" material="color: blue; opacity: 0.7" visible="false" cursor-listener>
-                            <a-text value="Aula 1" position="0 0.7 0" align="center" color="white"></a-text>
-                        </a-entity>
-                        <a-camera><a-cursor color="red"></a-cursor></a-camera>
-                        <a-light type="ambient" intensity="0.8"></a-light>
-                        <a-light type="directional" intensity="0.8" position="1 1 1"></a-light>
-                    </a-scene>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pie de página -->
-    <footer class="bg-blue-800 text-white py-4">
-        <div class="container mx-auto text-center">
-            <p>&copy; 2025 UNICEPES Zitácuaro. Desarrollado por <a href="#" class="underline">NexiNet</a>.</p>
-        </div>
-    </footer>
 </body>
 </html>
